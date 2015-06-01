@@ -11,10 +11,19 @@
 #import "QuartzCore/QuartzCore.h"
 #import "CompletionViewController.h"
 #import "CropViewController.h"
+#import <BlocksKit/BlocksKit+UIKit.h>
 
-@interface EditViewController () <CropImageProtocol> {
+@interface EditViewController () <CropImageProtocol, UIAlertViewDelegate, UIScrollViewDelegate> {
+    float phoneType_width;
     float customTopBar_height;
+    float choosePhoneTypeScrollView_height;
 }
+
+@property (strong, nonatomic) NSArray *phoneTypes;
+
+@property (strong, nonatomic) NSMutableArray *phoneTypesBtns;
+
+@property (nonatomic, assign) NSInteger selectdPhoneType;
 
 @end
 
@@ -25,6 +34,13 @@
     [super viewDidLoad];
     
     customTopBar_height = 60.0f;
+    phoneType_width = 60.0f;
+    choosePhoneTypeScrollView_height = 40.0f;
+    
+    NSString *location = [[NSBundle mainBundle] pathForResource:@"ShownPhoneTypes" ofType:@"plist"];
+    _phoneTypes = [NSArray arrayWithContentsOfFile:location];
+    
+    _phoneTypesBtns = [NSMutableArray arrayWithCapacity:_phoneTypes.count];
     
     _complexPictureOwner = [[ComplexPictureOwner alloc] init];
     [[NSBundle mainBundle] loadNibNamed:@"ComplexPicture"
@@ -50,6 +66,43 @@
                                  metrics:@{@"padding": @(10)}
                                  views:@{@"ibView": _complexPictureOwner.ibView}]];
     
+    _scrollView.minimumZoomScale = 0.5;
+    _scrollView.maximumZoomScale = 1.5;
+    _scrollView.delegate = self;
+    
+    [_choosePhoneTypeScrollView setContentSize:CGSizeMake(phoneType_width * _phoneTypes.count,
+                                                          choosePhoneTypeScrollView_height)];
+    
+    for (NSInteger i = 0; i < _phoneTypes.count; i++) {
+        
+        UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+        btn.tag = i;
+        [btn setTitle:_phoneTypes[i] forState:UIControlStateNormal];
+        if (i == [ComplexPictureDecorator sharedInstance].selectedPhoneType) {
+            [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        } else {
+            [btn setTitleColor:UIColorFromRGBA(125, 211, 245, 1.0) forState:UIControlStateNormal];
+        }
+        [btn setFrame:CGRectMake(i * phoneType_width, 0,
+                                 phoneType_width,
+                                 choosePhoneTypeScrollView_height)];
+        [_choosePhoneTypeScrollView addSubview:btn];
+        [_phoneTypesBtns addObject:btn];
+        
+        [btn bk_addEventHandler:^(id sender) {
+            
+            UIButton *old_btn = _phoneTypesBtns[[ComplexPictureDecorator sharedInstance].selectedPhoneType];
+            [old_btn setTitleColor:UIColorFromRGBA(125, 211, 245, 1.0) forState:UIControlStateNormal];
+            
+            UIButton *new_btn = sender;
+            [new_btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            
+            [ComplexPictureDecorator sharedInstance].selectedPhoneType = new_btn.tag;
+            
+        } forControlEvents:UIControlEventTouchUpInside];
+    }
+    
+    
     [_cancelBtn addTarget:self
                    action:@selector(cancelBtnDidClick)
          forControlEvents:UIControlEventTouchUpInside];
@@ -58,13 +111,19 @@
                     action:@selector(confirmBtnDidClick)
           forControlEvents:UIControlEventTouchUpInside];
     
+    [_signBtn addTarget:self
+                 action:@selector(signBtnDidClick)
+       forControlEvents:UIControlEventTouchUpInside];
+    
+    [_cutBtn addTarget:self
+                action:@selector(cutBtnDidClick)
+      forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     
     [super viewWillAppear:animated];
     self.navigationController.navigationBar.hidden = YES;
-    
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -89,21 +148,34 @@
 - (void)cancelBtnDidClick {
     
     [self.navigationController popToRootViewControllerAnimated:YES];
-    
 }
 
 - (void)confirmBtnDidClick {
     
-//    UIImage *image = [self captureCurrentView:_complexPictureOwner.ibView];
-//    [[ComplexPictureDecorator sharedInstance] setDecoratedImage:image];
-//    [self saveImageToPhotos:image];
-//    CompletionViewController *completionView = [[CompletionViewController alloc] init];
-//    [self.navigationController pushViewController:completionView animated:YES];
+    UIImage *image = [self captureCurrentView:_complexPictureOwner.ibView];
+    [[ComplexPictureDecorator sharedInstance] setDecoratedImage:image];
+    [self saveImageToPhotos:image];
+    CompletionViewController *completionView = [[CompletionViewController alloc] init];
+    [self.navigationController pushViewController:completionView animated:YES];
+}
+
+- (void)signBtnDidClick {
+    
+    UIAlertView *alertView = [[UIAlertView alloc]
+                              initWithTitle:@"署名"
+                              message:@"请输入您的名字"
+                              delegate:self
+                              cancelButtonTitle:@"取消"
+                              otherButtonTitles:@"确定", nil];
+    [alertView setAlertViewStyle:UIAlertViewStylePlainTextInput];
+    [alertView show];
+}
+
+- (void)cutBtnDidClick {
     
     CropViewController *cropVC = [[CropViewController alloc] init];
     cropVC.delegate = self;
     [self.navigationController pushViewController:cropVC animated:YES];
-    
 }
 
 - (UIImage *)captureCurrentView:(UIView *)view {
@@ -133,7 +205,7 @@
     
 }
 
-#pragma mark - deleate - Crop Image
+#pragma mark - Protocol - Crop Image
 
 - (void)croppedImageShouldBeUsedWithCompletionBlock:(void (^)())completionBlock {
     _complexPictureOwner.image = [ComplexPictureDecorator sharedInstance].image;
@@ -141,6 +213,21 @@
     if (completionBlock != nil) {
         completionBlock();
     }
+}
+
+#pragma mark - Protocol - alert view
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex  {
+    
+    if (buttonIndex == 1) {
+        [_complexPictureOwner setName:[alertView textFieldAtIndex:0].text];
+    }
+}
+
+#pragma mark - Protocol - scroll view
+
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
+    return _complexPictureOwner.ibView;
 }
 
 @end

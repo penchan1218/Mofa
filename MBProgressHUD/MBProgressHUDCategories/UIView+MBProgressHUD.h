@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MBProgressHUD.h"
 
 @interface UIView (MBProgressHUD)
+
+- (MBProgressHUD *)showHudWithText:(NSString *)text mode:(MBProgressHUDMode)mode waiting:(BOOL)waiting;
 
 @end

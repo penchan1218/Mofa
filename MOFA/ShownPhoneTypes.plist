@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict/>
+<array>
+	<string>4</string>
+	<string>4s</string>
+	<string>5</string>
+	<string>5c</string>
+	<string>5s</string>
+	<string>6</string>
+	<string>6p</string>
+</array>
 </plist>

@@ -23,4 +23,8 @@
 
 @property (strong, nonatomic) UIImage *image;
 
+@property (strong, nonatomic) NSLayoutConstraint *imageScaleConstraint;
+
+- (void)setName:(NSString *)name;
+
 @end

@@ -15,6 +15,7 @@
 @property (weak, nonatomic) ComplexPictureOwner *owner;
 
 @property (strong, nonatomic) UIImage *image;
+@property (strong, nonatomic) NSMutableArray *images;
 
 @property (strong, nonatomic) UIImage *decoratedImage;
 
@@ -23,6 +24,10 @@
 @property (nonatomic, assign) CGFloat scale;
 
 @property (nonatomic, copy) NSString *phoneType;
+
+@property (strong, nonatomic) NSArray *shownPhoneTypes;
+
+@property (nonatomic, assign) NSInteger selectedPhoneType;
 
 + (ComplexPictureDecorator *)sharedInstance;
 

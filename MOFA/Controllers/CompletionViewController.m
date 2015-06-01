@@ -8,8 +8,14 @@
 
 #import "CompletionViewController.h"
 #import "ComplexPictureDecorator.h"
+#import "UMSocial.h"
 
 @interface CompletionViewController ()
+
+@property (weak, nonatomic) IBOutlet UIButton *btn_wechat_share;
+@property (weak, nonatomic) IBOutlet UIButton *btn_qq_share;
+@property (weak, nonatomic) IBOutlet UIButton *btn_more_share;
+@property (weak, nonatomic) IBOutlet UIView *separator;
 
 @end
 
@@ -18,6 +24,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
+    
+    
+    [_separator addConstraint:[NSLayoutConstraint
+                               constraintWithItem:_separator attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:_separator attribute:NSLayoutAttributeHeight multiplier:0.0f constant:0.5]];
     
     [_cancelBtn addTarget:self action:@selector(cancenBtnDidClick) forControlEvents:UIControlEventTouchUpInside];
     
@@ -46,6 +56,44 @@
                                            @"height": @([[UIScreen mainScreen] bounds].size.width/5*4*_scale)}
                                  views:NSDictionaryOfVariableBindings(_imageView)]];
     
+}
+/*
+ UMShareToQQ, UMShareToQzone
+ */
+
+- (IBAction)sharetoWechat {
+    [[UMSocialDataService defaultDataService] postSNSWithTypes:@[UMShareToWechatTimeline]
+                                                       content:@"分享-来自Mofa"
+                                                         image:[[ComplexPictureDecorator sharedInstance] decoratedImage]
+                                                      location:nil urlResource:nil
+                                           presentedController:self
+                                                    completion:^(UMSocialResponseEntity *response) {
+                                                        NSLog(@"分享到微信朋友圈成功");
+                                                    }];
+}
+
+- (IBAction)sharetoQQ {
+    [[UMSocialDataService defaultDataService] postSNSWithTypes:@[UMShareToQzone]
+                                                       content:@"分享-来自Mofa"
+                                                         image:[[ComplexPictureDecorator sharedInstance] decoratedImage]
+                                                      location:nil urlResource:nil
+                                           presentedController:self
+                                                    completion:^(UMSocialResponseEntity *response) {
+                                                        NSLog(@"分享到QQ空间成功");
+                                                    }];
+}
+
+- (IBAction)sharetoMorePlatforms {
+    [UMSocialSnsService presentSnsIconSheetView:self
+                                         appKey:@"5523b588fd98c5e7a80009e9"
+                                      shareText:@"分享-来自Mofa"
+                                     shareImage:[[ComplexPictureDecorator sharedInstance] decoratedImage]
+                                shareToSnsNames:@[UMShareToWechatSession, UMShareToWechatFavorite, UMShareToSina, UMShareToEmail, UMShareToQQ, UMShareToSms]
+                                       delegate:nil];
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning {

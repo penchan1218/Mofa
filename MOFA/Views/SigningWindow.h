@@ -10,4 +10,12 @@
 
 @interface SigningWindow : UIWindow
 
+- (void)hide;
+
+- (void)show;
+
+- (void)showWithCompletionBlock:(void (^)())completionBlock;
+
+- (void)hideWithCompletionBlock:(void (^)())completionBlock;
+
 @end

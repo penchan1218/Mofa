@@ -21,4 +21,11 @@
 
 @property (strong, nonatomic) ComplexPictureOwner *complexPictureOwner;
 
+@property (weak, nonatomic) IBOutlet UIScrollView *choosePhoneTypeScrollView;
+
+@property (weak, nonatomic) IBOutlet UIView *bottomBar;
+
+@property (weak, nonatomic) IBOutlet UIButton *signBtn;
+
+@property (weak, nonatomic) IBOutlet UIButton *cutBtn;
 @end

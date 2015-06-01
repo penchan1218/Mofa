@@ -18,4 +18,6 @@
 
 #define BACKGROUND_DRAK                 [UIColor colorWithRed:48/255.0 green:49/255.0 blue:50/255.0 alpha:1.0]
 
+#define ONE_PIXEL                       1.0/[[UIScreen mainScreen] scale]
+
 #endif

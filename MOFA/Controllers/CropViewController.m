@@ -9,7 +9,7 @@
 #import "CropViewController.h"
 #import "ComplexPictureDecorator.h"
 #import "BJImageCropper.h"
-#import <MBProgressHUD/MBProgressHUD.h>
+#import "UIView+MBProgressHUD.h"
 
 #define SHOW_PREVIEW    YES
 
@@ -42,21 +42,19 @@
     
     UIButton *backwardBtn = [[UIButton alloc] initWithFrame:CGRectMake(10, 5, 50, 50)];
     [backwardBtn setImage:[UIImage imageNamed:@"cross"] forState:UIControlStateNormal];
-    backwardBtn.showsTouchWhenHighlighted = YES;
     [backwardBtn addTarget:self action:@selector(backwardBtnDidClick) forControlEvents:UIControlEventTouchUpInside];
     [customTopBar addSubview:backwardBtn];
     
     UIButton *confirmBtn = [[UIButton alloc] initWithFrame:CGRectMake(SCREEN_SIZE.width-10-50, 5,
                                                                       50, 50)];
     [confirmBtn setImage:[UIImage imageNamed:@"tick"] forState:UIControlStateNormal];
-    confirmBtn.showsTouchWhenHighlighted = YES;
     [confirmBtn addTarget:self action:@selector(confirmModification) forControlEvents:UIControlEventTouchUpInside];
     [customTopBar addSubview:confirmBtn];
     
     
     
     
-    BJImageCropper *imageCropper = [[BJImageCropper alloc] initWithImage:[[ComplexPictureDecorator sharedInstance] image]
+    BJImageCropper *imageCropper = [[BJImageCropper alloc] initWithImage:[[[ComplexPictureDecorator sharedInstance] images] firstObject]
                                                               andMaxSize:CGRectInset(self.view.bounds, 0, 60).size];
     [self.view addSubview:imageCropper];
     _imageCropper = imageCropper;
@@ -150,17 +148,19 @@
     UIImage *croppedImage = [_imageCropper getCroppedImage];
     [[ComplexPictureDecorator sharedInstance] setImage:croppedImage];
     
-    
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-    hud.labelText = @"处理中";
-    [self.view addSubview:hud];
-    [hud show:YES];
-    
+    __weak MBProgressHUD *weakHUD = [self.view showHudWithText:@"处理中"
+                                                          mode:MBProgressHUDModeText
+                                                       waiting:YES];
+    __weak typeof(self) weakSelf = self;
     if (self.delegate != nil) {
-        __weak MBProgressHUD *weakHUD = hud;
         [self.delegate croppedImageShouldBeUsedWithCompletionBlock:^{
             [weakHUD hide:YES];
+            [weakSelf popToPreviousVC];
         }];
+    } else {
+        NSLog(@"Crop view没有设置delegate, 无法完成回调。");
+        [weakHUD hide:YES];
+        [weakSelf popToPreviousVC];
     }
 }
 

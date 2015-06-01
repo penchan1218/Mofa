@@ -10,4 +10,17 @@
 
 @implementation UIView (MBProgressHUD)
 
+- (MBProgressHUD *)showHudWithText:(NSString *)text mode:(MBProgressHUDMode)mode waiting:(BOOL)waiting {
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self];
+    hud.labelText = text;
+    hud.mode = mode;
+    [self addSubview:hud];
+    [hud show:YES];
+    if (!waiting) {
+        [hud hide:YES afterDelay:1.0];
+    }
+    
+    return hud;
+}
+
 @end
